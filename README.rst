@@ -1,6 +1,6 @@
-===============================
+==============
 pySEM-EELS GUI
-===============================
+==============
 
 
 .. image:: https://img.shields.io/pypi/v/pysemeelsgui.svg
@@ -9,8 +9,8 @@ pySEM-EELS GUI
 .. image:: https://img.shields.io/travis/drix00/pysemeelsgui.svg
         :target: https://travis-ci.org/drix00/pysemeelsgui
 
-.. image:: https://readthedocs.org/projects/pysemeelsgui/badge/?version=latest
-        :target: https://pysemeelsgui.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/pysemeels-gui/badge/?version=latest
+        :target: https://pysemeels-gui.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
 .. image:: https://pyup.io/repos/github/drix00/pysemeelsgui/shield.svg
@@ -22,7 +22,7 @@ GUI for pySEM-EELS project.
 
 
 * Free software: GNU General Public License v3
-* Documentation: https://pysemeelsgui.readthedocs.io.
+* Documentation: https://pysemeels-gui.readthedocs.io.
 
 
 Features
@@ -31,7 +31,7 @@ Features
 * TODO
 
 Credits
----------
+-------
 
 This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
 
