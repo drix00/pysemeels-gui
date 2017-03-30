@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-.. py:currentmodule:: pysemeelsgui.tests
-   :synopsis: Tests package for the project.
+.. py:currentmodule:: pysemeelsgui.tests.test_main_window
+   :synopsis: Tests for the module :py:mod:`pysemeelsgui.main_window`
 
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 
-Tests package for the project.
+Tests for the module :py:mod:`pysemeelsgui.main_window`.
 """
 
 ###############################################################################
@@ -29,12 +29,47 @@ Tests package for the project.
 ###############################################################################
 
 # Standard library modules.
+import unittest
 
 # Third party modules.
 
 # Local modules.
 
 # Project modules.
+import pysemeelsgui.main_window
+
 
 # Globals and constants variables.
 
+class TestMainWindow(unittest.TestCase):
+    """
+    TestCase class for the module `pysemeelsgui.main_window`.
+    """
+
+    def setUp(self):
+        """
+        Setup method.
+        """
+
+        unittest.TestCase.setUp(self)
+
+    def tearDown(self):
+        """
+        Teardown method.
+        """
+
+        unittest.TestCase.tearDown(self)
+
+    def testSkeleton(self):
+        """
+        First test to check if the testcase is working with the testing framework.
+        """
+
+        #self.fail("Test if the testcase is working.")
+        self.assert_(True)
+
+
+if __name__ == '__main__':  # pragma: no cover
+    import nose
+
+    nose.runmodule()

@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-.. py:currentmodule:: pysemeelsgui.tests
-   :synopsis: Tests package for the project.
+.. py:currentmodule:: tests
+   :synopsis: Regression testing for the project.
 
 .. moduleauthor:: Hendrix Demers <hendrix.demers@mail.mcgill.ca>
 
-Tests package for the project.
+Regression testing for the project.
 """
 
 ###############################################################################
@@ -38,3 +38,6 @@ Tests package for the project.
 
 # Globals and constants variables.
 
+if __name__ == "__main__":  # pragma: no cover
+    import nose
+    nose.main()
