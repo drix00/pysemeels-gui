@@ -35,18 +35,17 @@ import os.path
 # Third party modules.
 from qtpy.QtWidgets import QMainWindow, QAction, QApplication, QStyle, QFileDialog, QDockWidget, QLabel
 from qtpy.QtCore import QSettings, Qt
-import six
 
 import matplotlib
 # Make sure that we are using QT5
 matplotlib.use('Qt5Agg')
 
 # Local modules.
-from pysemeels.hitachi.eels_su.elv_file import ElvFile
 
 # Project modules.
 from pysemeelsgui.spectrum_widget import SpectrumWidget
 from pysemeelsgui.zero_loss_peak_widget import ZeroLossPeakWidget
+from pysemeelsgui.spectra import Spectra
 
 # Globals and constants variables.
 
@@ -54,6 +53,8 @@ from pysemeelsgui.zero_loss_peak_widget import ZeroLossPeakWidget
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
+
+        self.spectra = Spectra()
 
         self.init_ui()
 
@@ -64,7 +65,7 @@ class MainWindow(QMainWindow):
         standard_icon = self.style().standardIcon
 
         # Central widget.
-        self.main_widget = SpectrumWidget()
+        self.main_widget = SpectrumWidget(self.spectra)
         self.main_widget.setFocus()
         self.setCentralWidget(self.main_widget)
 
@@ -114,7 +115,7 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.AllDockWidgetAreas, self.graphic_settings_dock)
         print(self.graphic_settings_dock.objectName())
 
-        self.zero_loss_peak_dock = ZeroLossPeakWidget(self)
+        self.zero_loss_peak_dock = ZeroLossPeakWidget(self, self.spectra)
         analysis_menu.addAction(self.zero_loss_peak_dock.toggleViewAction())
         self.addDockWidget(Qt.AllDockWidgetAreas, self.zero_loss_peak_dock)
 
@@ -185,26 +186,13 @@ class MainWindow(QMainWindow):
         formats = ["*.elv"]
         filter = "Spectrum file ({:s})".format(" ".join(formats))
         file_names = QFileDialog.getOpenFileName(self, "Open an EELS spectrum", path, filter)
-        
-        if six.PY3:
-            for file_name in file_names:
-                if os.path.splitext(file_name)[1] == ".elv":
-                    with open(file_name, 'r') as elv_text_file:
-                        elv_file = ElvFile()
-                        elv_file.read(elv_text_file)
-    
-                        spectrum_data = elv_file.get_spectrum_data()
-                        self.main_widget.update_figure(spectrum_data)
-        elif six.PY2:
-            file_name = file_names
-            if os.path.splitext(file_name)[1] == ".elv":
-                with open(file_name, 'r') as elv_text_file:
-                    elv_file = ElvFile()
-                    elv_file.read(elv_text_file)
 
-                    spectrum_data = elv_file.get_spectrum_data()
-                    self.main_widget.update_figure(spectrum_data)
-            
+        self.spectra.open_spectrum(file_names)
+
+        elv_file = self.spectra.get_current_elv_file()
+        spectrum_data = elv_file.get_spectrum_data()
+        self.main_widget.update_figure(spectrum_data)
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MainWindow()

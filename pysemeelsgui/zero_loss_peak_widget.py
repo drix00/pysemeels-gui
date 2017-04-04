@@ -33,9 +33,11 @@ Widget to analyze zero loss peak.
 # Third party modules.
 from qtpy.QtWidgets import QDockWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout, QWidget
 from qtpy.QtCore import Qt
-
+import numpy as np
 
 # Local modules.
+from pysemeels.hitachi.eels_su.elv_file import ElvFile
+from pysemeels.analysis.zero_loss_peak import ZeroLossPeak
 
 # Project modules.
 
@@ -43,8 +45,10 @@ from qtpy.QtCore import Qt
 
 
 class ZeroLossPeakWidget(QDockWidget):
-    def __init__(self, parent):
-        super(ZeroLossPeakWidget, self).__init__("Aero loss peak", parent)
+    def __init__(self, parent, spectra):
+        super(ZeroLossPeakWidget, self).__init__("Zero loss peak", parent)
+
+        self.spectra = spectra
 
         main_widget = QWidget()
         main_layout = QVBoxLayout()
@@ -55,20 +59,20 @@ class ZeroLossPeakWidget(QDockWidget):
         analyze_button = QPushButton("Analyze", self)
         analyze_button.setToolTip('Find and analyze zero loss peak')
         analyze_button.resize(analyze_button.sizeHint())
-        analyze_button.clicked.connect(self.find_analyze_zlp)
+        analyze_button.clicked.connect(self.analyze_zlp)
 
         main_layout.addWidget(analyze_button)
 
         results_layout = QGridLayout()
         label_title_position = QLabel("Position (eV): ")
-        label_value_position = QLabel("")
+        self.label_value_position = QLabel("")
         results_layout.addWidget(label_title_position, 0, 0)
-        results_layout.addWidget(label_value_position, 0, 1)
+        results_layout.addWidget(self.label_value_position, 0, 1)
 
         label_title_fwhm = QLabel("FWHM (eV): ")
-        label_value_fwhm = QLabel("")
+        self.label_value_fwhm = QLabel("")
         results_layout.addWidget(label_title_fwhm, 1, 0)
-        results_layout.addWidget(label_value_fwhm, 1, 1)
+        results_layout.addWidget(self.label_value_fwhm, 1, 1)
 
         main_layout.addLayout(results_layout)
         main_layout.addStretch(1)
@@ -78,6 +82,13 @@ class ZeroLossPeakWidget(QDockWidget):
         self.setVisible(False)
         print(self.objectName())
 
+    def analyze_zlp(self):
+        print("analyze_zlp")
 
-    def find_analyze_zlp(self):
-        print("find_analyze_zlp")
+        elv_file = self.spectra.get_current_elv_file()
+        zlp = ZeroLossPeak(elv_file.energies_eV, np.array(elv_file.counts) - np.array(elv_file.dark_currents))
+        zlp.compute_statistics()
+        zlp.compute_fwhm()
+
+        self.label_value_position.setText(str(zlp.mean_eV))
+        self.label_value_fwhm.setText(str(zlp.fwhm_eV))
