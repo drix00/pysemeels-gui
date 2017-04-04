@@ -35,6 +35,7 @@ import os.path
 # Third party modules.
 from qtpy.QtWidgets import QMainWindow, QAction, QApplication, QStyle, QFileDialog, QDockWidget, QLabel
 from qtpy.QtCore import QSettings, Qt
+import six
 
 import matplotlib
 # Make sure that we are using QT5
@@ -52,7 +53,7 @@ from pysemeelsgui.zero_loss_peak_widget import ZeroLossPeakWidget
 
 class MainWindow(QMainWindow):
     def __init__(self):
-        super().__init__()
+        super(MainWindow, self).__init__()
 
         self.init_ui()
 
@@ -123,7 +124,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         self.save_settings()
-        super().closeEvent(event)
+        super(MainWindow, self).closeEvent(event)
 
     def save_settings(self):
         settings = QSettings("openMicroanalysis", "pysemeelsgui")
@@ -184,8 +185,18 @@ class MainWindow(QMainWindow):
         formats = ["*.elv"]
         filter = "Spectrum file ({:s})".format(" ".join(formats))
         file_names = QFileDialog.getOpenFileName(self, "Open an EELS spectrum", path, filter)
-
-        for file_name in file_names:
+        
+        if six.PY3:
+            for file_name in file_names:
+                if os.path.splitext(file_name)[1] == ".elv":
+                    with open(file_name, 'r') as elv_text_file:
+                        elv_file = ElvFile()
+                        elv_file.read(elv_text_file)
+    
+                        spectrum_data = elv_file.get_spectrum_data()
+                        self.main_widget.update_figure(spectrum_data)
+        elif six.PY2:
+            file_name = file_names
             if os.path.splitext(file_name)[1] == ".elv":
                 with open(file_name, 'r') as elv_text_file:
                     elv_file = ElvFile()
@@ -193,7 +204,7 @@ class MainWindow(QMainWindow):
 
                     spectrum_data = elv_file.get_spectrum_data()
                     self.main_widget.update_figure(spectrum_data)
-
+            
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MainWindow()

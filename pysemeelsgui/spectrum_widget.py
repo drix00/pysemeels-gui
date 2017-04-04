@@ -32,12 +32,18 @@ Widget to display an eels spectrum.
 import os.path
 
 # Third party modules.
+import six
 from qtpy.QtWidgets import QSizePolicy, QWidget, QVBoxLayout
 from qtpy.QtCore import Qt
 
 from matplotlib.backend_bases import key_press_handler
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+import qtpy
+if qtpy.API == 'pyqt5':
+	from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+	from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+elif qtpy.API == 'pyqt':
+	from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+	from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
@@ -58,7 +64,7 @@ class SpectrumCanvas(FigureCanvas):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
 
-        super().__init__(self.fig)
+        super(SpectrumCanvas, self).__init__(self.fig)
         self.setParent(parent)
 
         self.compute_initial_figure()
@@ -106,8 +112,14 @@ class SpectrumCanvas(FigureCanvas):
 
     def dropEvent(self, event):
         if event.mimeData().hasFormat('application/x-qt-windows-mime;value="FileName"'):
-            data = event.mimeData().text()
-            file_path = data.lstrip("file:///")
+            if six.PY3:
+                data = event.mimeData().text()
+                print(data)
+                file_path = data.lstrip("file:///")
+            elif six.PY2:
+                mime_data = event.mimeData().data('application/x-qt-windows-mime;value="FileName"')
+                print(mime_data)
+                file_path = mime_data.data()
             self.open_spectrum(file_path)
             event.setDropAction(Qt.CopyAction)
             event.accept()
@@ -126,7 +138,7 @@ class SpectrumCanvas(FigureCanvas):
 
 class SpectrumWidget(QWidget):
     def __init__(self):
-        super().__init__()
+        super(SpectrumWidget, self).__init__()
 
         layout = QVBoxLayout(self)
 

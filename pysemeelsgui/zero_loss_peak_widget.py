@@ -44,7 +44,7 @@ from qtpy.QtCore import Qt
 
 class ZeroLossPeakWidget(QDockWidget):
     def __init__(self, parent):
-        super().__init__("Aero loss peak", parent)
+        super(ZeroLossPeakWidget, self).__init__("Aero loss peak", parent)
 
         main_widget = QWidget()
         main_layout = QVBoxLayout()
