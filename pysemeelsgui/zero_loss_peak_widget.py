@@ -86,7 +86,7 @@ class ZeroLossPeakWidget(QDockWidget):
         print("analyze_zlp")
 
         elv_file = self.spectra.get_current_elv_file()
-        zlp = ZeroLossPeak(elv_file.energies_eV, np.array(elv_file.counts) - np.array(elv_file.dark_currents))
+        zlp = ZeroLossPeak(elv_file.energies_eV[:-1], np.array(elv_file.counts[:-1]))
         zlp.compute_statistics()
         zlp.compute_fwhm()
 
