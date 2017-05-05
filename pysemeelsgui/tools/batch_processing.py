@@ -33,7 +33,7 @@ if six.PY3:
     from tkinter import ttk
     from tkinter import filedialog, N, W, E, S, StringVar, BooleanVar, Tk
 elif six.PY2:
-    from Tkinter import ttk
+    import ttk
     from Tkinter import filedialog, N, W, E, S, StringVar, BooleanVar, Tk
 
 
