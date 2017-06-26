@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -19,6 +19,8 @@ test_requirements = [
     "nose",
 ]
 
+packages = find_packages()
+
 setup(
     name='pysemeelsgui',
     version='0.1.0',
@@ -27,9 +29,7 @@ setup(
     author="Hendrix Demers",
     author_email='hendrix.demers@mail.mcgill.ca',
     url='https://github.com/drix00/pysemeelsgui',
-    packages=[
-        'pysemeelsgui',
-    ],
+    packages=packages,
     package_dir={'pysemeelsgui':
                  'pysemeelsgui'},
     include_package_data=True,
