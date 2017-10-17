@@ -31,6 +31,8 @@ Main window of the application.
 # Standard library modules.
 import sys
 import os.path
+import optparse
+import logging
 
 # Third party modules.
 from qtpy.QtWidgets import QMainWindow, QAction, QApplication, QStyle, QFileDialog, QDockWidget, QLabel
@@ -45,20 +47,28 @@ matplotlib.use('Qt5Agg')
 # Project modules.
 from pysemeelsgui.spectrum_widget import SpectrumWidget
 from pysemeelsgui.zero_loss_peak_widget import ZeroLossPeakWidget
+from pysemeelsgui.projects_widget import ProjectWidget
 from pysemeelsgui.spectra import Spectra
 
 # Globals and constants variables.
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, argv):
         super(MainWindow, self).__init__()
+
+        self.main_widget = None
+        self.graphic_settings_dock = None
+        self.zero_loss_peak_dock = None
+        self.projects_dock = None
 
         self.spectra = Spectra()
 
         self.init_ui()
 
         self.read_settings()
+
+        self.parse_arguments(argv)
 
     def init_ui(self):
         # Define standard icon.
@@ -119,6 +129,10 @@ class MainWindow(QMainWindow):
         analysis_menu.addAction(self.zero_loss_peak_dock.toggleViewAction())
         self.addDockWidget(Qt.AllDockWidgetAreas, self.zero_loss_peak_dock)
 
+        self.projects_dock = ProjectWidget(self)
+        view_menu.addAction(self.projects_dock.toggleViewAction())
+        self.addDockWidget(Qt.AllDockWidgetAreas, self.projects_dock)
+
         # Final options.
         self.setWindowTitle('pySEM-EELS')
         self.show()
@@ -129,7 +143,7 @@ class MainWindow(QMainWindow):
 
     def save_settings(self):
         settings = QSettings("openMicroanalysis", "pysemeelsgui")
-        #print(settings.fileName())
+        # print(settings.fileName())
 
         settings.beginGroup("MainWindow")
         settings.setValue("geometry", self.saveGeometry())
@@ -144,10 +158,14 @@ class MainWindow(QMainWindow):
         settings.setValue("visible", self.zero_loss_peak_dock.isVisible())
         settings.endGroup()
 
+        settings.beginGroup("projects_dock")
+        settings.setValue("visible", self.projects_dock.isVisible())
+        settings.endGroup()
+
     def read_settings(self):
         settings = QSettings("openMicroanalysis", "pysemeelsgui")
-        #print(settings.fileName())
-        #settings.clear()
+        # print(settings.fileName())
+        # settings.clear()
 
         settings.beginGroup("MainWindow")
         geometry_value = settings.value("geometry")
@@ -178,14 +196,28 @@ class MainWindow(QMainWindow):
                 self.zero_loss_peak_dock.setVisible(False)
         settings.endGroup()
 
+    def parse_arguments(self, argv):
+        option_parser = optparse.OptionParser()
+        option_parser.add_option("-s", "--spectrum", action="store", type="string", dest="spectrum_file", help="Open a eels spectrum")
+
+        options, arguments = option_parser.parse_args()
+        logging.info("Remaining arguments: {}".format(arguments))
+        logging.info("Spectrum file: {}".format(options.spectrum_file))
+
+        if options.spectrum_file:
+            self.spectra.open_spectrum(options.spectrum_file)
+
+            elv_file = self.spectra.get_current_elv_file()
+            spectrum_data = elv_file.get_spectrum_data()
+            self.main_widget.update_figure(spectrum_data)
 
     def open_spectrum(self):
         self.statusBar().showMessage("Opening spectrum", 2000)
 
         path = os.path.dirname(__file__)
         formats = ["*.elv"]
-        filter = "Spectrum file ({:s})".format(" ".join(formats))
-        file_names = QFileDialog.getOpenFileName(self, "Open an EELS spectrum", path, filter)
+        spectrum_filter = "Spectrum file ({:s})".format(" ".join(formats))
+        file_names = QFileDialog.getOpenFileName(self, "Open an EELS spectrum", path, spectrum_filter)
 
         self.spectra.open_spectrum(file_names)
 
@@ -193,7 +225,10 @@ class MainWindow(QMainWindow):
         spectrum_data = elv_file.get_spectrum_data()
         self.main_widget.update_figure(spectrum_data)
 
+
 if __name__ == '__main__':
+    logging.getLogger().setLevel(logging.INFO)
+
     app = QApplication(sys.argv)
-    ex = MainWindow()
+    ex = MainWindow(sys.argv)
     sys.exit(app.exec_())
