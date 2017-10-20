@@ -34,7 +34,8 @@ if six.PY3:
     from tkinter import filedialog, N, W, E, S, StringVar, BooleanVar, Tk
 elif six.PY2:
     import ttk
-    from Tkinter import filedialog, N, W, E, S, StringVar, BooleanVar, Tk
+    from Tkinter import N, W, E, S, StringVar, BooleanVar, Tk
+    import tkFileDialog as filedialog
 
 
 # Third party modules.
