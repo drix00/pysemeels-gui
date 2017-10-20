@@ -13,6 +13,7 @@ requirements = [
     "qtpy",
     "matplotlib",
     "numpy",
+    "six",
 ]
 
 test_requirements = [
