@@ -36,8 +36,8 @@ if six.PY3:
     from tkinter import filedialog, N, W, E, S, StringVar, BooleanVar, IntVar, DoubleVar, Tk, DISABLED, NORMAL
 elif six.PY2:
     import ttk
-    from Tkinter import filedialog, N, W, E, S, StringVar, BooleanVar, IntVar, DoubleVar, Tk, DISABLED, NORMAL
-
+    from Tkinter import N, W, E, S, StringVar, BooleanVar, IntVar, DoubleVar, Tk, DISABLED, NORMAL
+    import tkFileDialog as filedialog
 
 # Third party modules.
 from pywinauto.application import Application, AppNotConnected, ProcessNotFoundError
