@@ -117,7 +117,7 @@ class TkMainGui(ttk.Frame):
         file_path_entry.focus()
 
     def open_file(self):
-        logging.debug("open_file")
+        logging.debug("open_element_view_program")
 
         filename = filedialog.askopenfilename(filetypes=(("ELV file", "*.elv"), ), initialdir=self.default_folder)
         logging.debug(filename)
@@ -181,6 +181,7 @@ def main_gui():
 
     logging.debug("Mainloop")
     root.mainloop()
+
 
 if __name__ == '__main__':  # pragma: no cover
     logging.getLogger().setLevel(logging.INFO)
