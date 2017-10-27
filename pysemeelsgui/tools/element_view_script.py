@@ -250,7 +250,7 @@ class TkMainGui(ttk.Frame):
                 window_confirm = app['Confirm Save As']
                 window_confirm.wait("exists enabled visible ready")
                 if self.overwrite.get():
-                    window_confirm.No.click()
+                    window_confirm.Yes.click()
                 else:
                     window_confirm.No.click()
             except Exception as message:
@@ -266,26 +266,27 @@ class TkMainGui(ttk.Frame):
         print("Application connected")
 
         top_window = app.top_window()
+        top_window.wait("exists enabled visible ready")
 
         for spectrum_id in range(1, self.number_spectra.get() + 1):
             print("Spectrum id: {:d}".format(spectrum_id))
-            top_window.wait("exists enabled visible ready")
+            # top_window.wait("exists enabled visible ready")
 
             top_window.menu_select("File -> Save")
 
-            app.Comment.wait("exists enabled visible ready")
-            app.CommentEdit.Edit.SetEditText("auto script")
+            # app.Comment.wait("exists enabled visible ready")
+            # app.CommentEdit.Edit.SetEditText("auto script")
             app.Comment.OK.click()
 
             save_as_window = app['Save As']
-            save_as_window.wait("exists enabled visible ready")
+            # save_as_window.wait("exists enabled visible ready")
             file_name = "%s_%i.elv" % (self.basename.get(), spectrum_id)
             save_as_window.Edit.SetEditText(file_name)
             save_as_window.Save.click()
 
             try:
                 window_confirm = app['Confirm Save As']
-                window_confirm.wait("exists enabled visible ready")
+                # window_confirm.wait("exists enabled visible ready")
                 if self.overwrite.get():
                     window_confirm.Yes.click()
                 else:
@@ -310,7 +311,7 @@ def main_gui():
     if len(sys.argv) > 1:
         default_folder = sys.argv[1]
     else:
-        default_folder = "C:\Program Files\ElementsView\30kV ElementsView.exe"
+        default_folder = r"C:\Program Files\ElementsView\30kV ElementsView.exe"
     TkMainGui(root, default_folder=default_folder).pack()
 
     logging.debug("Mainloop")
