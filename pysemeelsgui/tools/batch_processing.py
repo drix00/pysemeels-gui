@@ -71,9 +71,17 @@ class TkMainGui(ttk.Frame):
         self.overwrite.set(True)
 
         self.convert_msa = BooleanVar()
-        self.convert_msa.set(True)
+        self.convert_msa.set(False)
         self.convert_hdf5 = BooleanVar()
         self.convert_hdf5.set(False)
+        self.use_project_hdf5_file = BooleanVar()
+        self.use_project_hdf5_file.set(True)
+        self.project_hdf5_file = StringVar()
+
+        self.generate_spectrum_figure = BooleanVar()
+        self.generate_spectrum_figure.set(False)
+        self.generate_window_figure = BooleanVar()
+        self.generate_window_figure.set(False)
 
         self.results_text = StringVar()
 
@@ -102,7 +110,19 @@ class TkMainGui(ttk.Frame):
         ttk.Checkbutton(self, text="Export MSA", var=self.convert_msa, width=80).grid(column=3, row=row_id, sticky=W)
 
         row_id += 1
-        ttk.Checkbutton(self, text="Export HDF5", var=self.convert_hdf5, width=80).grid(column=3, row=row_id, sticky=W)
+        ttk.Checkbutton(self, text="Export single HDF5", var=self.convert_hdf5, width=80).grid(column=3, row=row_id, sticky=W)
+        row_id += 1
+        ttk.Checkbutton(self, text="Export in project HDF5", var=self.use_project_hdf5_file, width=80).grid(column=3, row=row_id, sticky=W)
+
+        row_id += 1
+        file_path_entry = ttk.Entry(self, width=80, textvariable=self.project_hdf5_file)
+        file_path_entry.grid(column=2, row=row_id, sticky=W)
+        ttk.Button(self, text="Select a project HDF5 file", command=self.save_as_project_hdf5_file).grid(column=3, row=row_id, sticky=W)
+
+        row_id += 1
+        ttk.Checkbutton(self, text="Generate spectrum figure", var=self.generate_spectrum_figure, width=80).grid(column=3, row=row_id, sticky=W)
+        row_id += 1
+        ttk.Checkbutton(self, text="Generate window figure", var=self.generate_window_figure, width=80).grid(column=3, row=row_id, sticky=W)
 
         row_id += 1
         ttk.Button(self, text="Process data", command=self.process_data, width=80).grid(column=2, row=row_id, sticky=W)
@@ -130,14 +150,22 @@ class TkMainGui(ttk.Frame):
         logging.debug(folder_name)
         self.data_folder.set(folder_name)
 
+    def save_as_project_hdf5_file(self):
+        filename = filedialog.asksaveasfilename(initialdir=self.data_folder.get(),
+                                                title="Save as Project HDF5 file",
+                                                filetypes=[("Project HDF5 file", "*.hdf5")])
+        if filename:
+            self.project_hdf5_file.set(filename)
+
     def process_data(self):
         logging.debug("process_data")
 
         elv_file_path = self.file_path.get()
 
-        if len(elv_file_path) > 0:
+        if self.is_conversion_needed() and len(elv_file_path) > 0:
             self.results_text.set("Convert file ...")
             convert_elv = ConvertElv(elv_file_path)
+
             convert_elv.convert_msa = self.convert_msa.get()
             convert_elv.convert_hdf5 = self.convert_hdf5.get()
 
@@ -146,24 +174,34 @@ class TkMainGui(ttk.Frame):
 
         data_folder = self.data_folder.get()
         if len(data_folder) > 0:
-            self.results_text.set("Batch converting files ...")
-            batch_convert_elv = BatchConvertElv(data_folder)
-            batch_convert_elv.overwrite = self.overwrite.get()
-            batch_convert_elv.recursive = self.recursive.get()
-            batch_convert_elv.convert()
-            self.results_text.set("Batch converting files ... Done")
+            if self.is_conversion_needed():
+                self.results_text.set("Batch converting files ...")
+                batch_convert_elv = BatchConvertElv(data_folder)
+                batch_convert_elv.overwrite = self.overwrite.get()
+                batch_convert_elv.recursive = self.recursive.get()
+                batch_convert_elv.convert_msa = self.convert_msa.get()
+                batch_convert_elv.convert_hdf5 = self.convert_hdf5.get()
+                batch_convert_elv.project_hdf5_file = self.project_hdf5_file.get()
 
-            self.results_text.set("Generate spectra figures ...")
-            batch_generate_spectra = BatchGenerateSpectra(data_folder)
-            batch_generate_spectra.generate()
-            self.results_text.set("Generate spectra figures ... Done")
+                batch_convert_elv.convert()
+                self.results_text.set("Batch converting files ... Done")
 
-            self.results_text.set("Generate windows figures ...")
-            batch_generate_windows_figure = BatchGenerateWindowsFigure(data_folder)
-            batch_generate_windows_figure.generate()
-            self.results_text.set("Generate windows figures ... Done")
+            if self.generate_spectrum_figure.get():
+                self.results_text.set("Generate spectra figures ...")
+                batch_generate_spectra = BatchGenerateSpectra(data_folder)
+                batch_generate_spectra.generate()
+                self.results_text.set("Generate spectra figures ... Done")
+
+            if self.generate_window_figure.get():
+                self.results_text.set("Generate windows figures ...")
+                batch_generate_windows_figure = BatchGenerateWindowsFigure(data_folder)
+                batch_generate_windows_figure.generate()
+                self.results_text.set("Generate windows figures ... Done")
 
         self.results_text.set("Completed")
+
+    def is_conversion_needed(self):
+        return self.convert_msa.get() or self.convert_hdf5.get() or self.convert_hdf5.get()
 
 
 def main_gui():
