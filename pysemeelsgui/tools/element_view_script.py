@@ -311,7 +311,7 @@ def main_gui():
     if len(sys.argv) > 1:
         default_folder = sys.argv[1]
     else:
-        default_folder = r"C:\Program Files\ElementsView\30kV ElementsView.exe"
+        default_folder = r"C:\Program Files\ElementsView"
     TkMainGui(root, default_folder=default_folder).pack()
 
     logging.debug("Mainloop")
