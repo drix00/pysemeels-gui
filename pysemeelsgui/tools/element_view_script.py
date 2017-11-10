@@ -298,15 +298,16 @@ class TkMainGui(ttk.Frame):
             app['Save As'].Edit.SetEditText(file_name)
             app['Save As'].Save.click()
 
-            try:
-                window_confirm = app['Confirm Save As']
-                window_confirm.wait("exists enabled visible ready")
-                if self.overwrite.get():
-                    window_confirm.Yes.click()
-                else:
-                    window_confirm.No.click()
-            except Exception as message:
-                logger.error(message)
+            if self.overwrite.get():
+                try:
+                    window_confirm = app['Confirm Save As']
+                    window_confirm.wait("exists enabled visible ready")
+                    if self.overwrite.get():
+                        window_confirm.Yes.click()
+                    else:
+                        window_confirm.No.click()
+                except Exception as message:
+                    logger.error(message)
 
         logger.info("Done")
         self.results_text.set("Done")
@@ -336,18 +337,19 @@ class TkMainGui(ttk.Frame):
             save_as_window.Edit.SetEditText(file_name)
             save_as_window.Save.click()
 
-            try:
-                window_confirm = app['Confirm Save As']
-                # window_confirm.wait("exists enabled visible ready")
-                if self.overwrite.get():
-                    window_confirm.Yes.click()
-                else:
-                    window_confirm.No.click()
-                    save_as_window.Cancel.click()
-                    self.results_text.set("Cancel save file already exist")
-                    return
-            except Exception as message:
-                logger.error(message)
+            if self.overwrite.get():
+                try:
+                    window_confirm = app['Confirm Save As']
+                    # window_confirm.wait("exists enabled visible ready")
+                    if self.overwrite.get():
+                        window_confirm.Yes.click()
+                    else:
+                        window_confirm.No.click()
+                        save_as_window.Cancel.click()
+                        self.results_text.set("Cancel save file already exist")
+                        return
+                except Exception as message:
+                    logger.error(message)
 
         logger.info("Done")
         self.results_text.set("Done")
