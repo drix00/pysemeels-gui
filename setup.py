@@ -14,6 +14,7 @@ requirements = [
     "matplotlib",
     "numpy",
     "six",
+    "pywinauto",
 ]
 
 test_requirements = [
