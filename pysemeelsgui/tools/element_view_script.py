@@ -41,7 +41,7 @@ elif six.PY2:
 
 # Third party modules.
 from pywinauto.application import Application, AppNotConnected, ProcessNotFoundError
-from pywinauto.timings import TimeoutError
+from pywinauto.timings import TimeoutError, Timings
 
 # Local modules.
 
@@ -214,15 +214,17 @@ class TkMainGui(ttk.Frame):
     def find_element_view(self):
         try:
             app = Application(backend="win32").connect(path=self.program_path.get())
-            print("Application connected")
+            logger.info("Application connected")
+            # logger.info("app: {}".format(app.print_control_identifiers(depth=1)))
 
             try:
                 top_window = app.top_window()
+                top_window.wait("exists enabled visible ready")
                 self.is_top_window.set(True)
-                print("top_window: {}".format(top_window.print_control_identifiers(depth=1)))
+                logger.info("top_window: {}".format(top_window.print_control_identifiers(depth=1)))
 
                 try:
-                    print("Button2: {}".format(top_window.Button2.print_control_identifiers(depth=1)))
+                    logger.info("Button2: {}".format(top_window.Button2.print_control_identifiers(depth=1)))
                     self.is_manual_acquisition_button.set(True)
                 except Exception as message:
                     logger.error(message)
@@ -233,7 +235,7 @@ class TkMainGui(ttk.Frame):
                     logger.info("File->Save")
                     app.Comment.wait("exists enabled visible ready")
                     logger.info(app.Comment.print_control_identifiers())
-                    app.CommentEdit.Edit.SetEditText("auto script")
+                    # app.CommentEdit.Edit.SetEditText("auto script")
                     app.Comment.OK.click()
                     logger.info("Comment")
 
@@ -266,81 +268,61 @@ class TkMainGui(ttk.Frame):
             self.start_button.config(state=DISABLED)
 
     def start_script(self):
-        if self.acquisition_mode.get() == ACQUISITION_MODE_MANUAL:
-            self.manual_save()
-        if self.acquisition_mode.get() == ACQUISITION_MODE_LIVE:
-            self.live_save()
+        self.save_spectra()
 
-    def manual_save(self):
-        self.results_text.set("Manual save")
+    def save_spectra(self):
+        acquisition_mode = self.acquisition_mode.get()
+        safe_acquisition = not self.fast_acquisition.get()
+        overwrite = self.overwrite.get()
+
+        if self.fast_acquisition.get():
+            Timings.Fast()
+            Timings.window_find_timeout = 2
+
+        if acquisition_mode == ACQUISITION_MODE_MANUAL:
+            self.results_text.set("Manual save")
+        if acquisition_mode == ACQUISITION_MODE_LIVE:
+            self.results_text.set("Live save")
 
         app = Application(backend="win32").connect(path=self.program_path.get())
-        print("Application connected")
+        logger.info("Application connected")
 
-        top_window = app.top_window()
-
-        for spectrum_id in range(1, self.number_spectra.get() + 1):
-            print("Spectrum id: {:d}".format(spectrum_id))
+        top_window = app.window(title_re=".*ElementsView.*")
+        if safe_acquisition:
             top_window.wait("exists enabled visible ready")
 
-            top_window.Button2.click()
-
-            time.sleep(self.delay_spectrum_s.get())
-
-            top_window.menu_select("File -> Save")
-
-            app.Comment.wait("exists enabled visible ready")
-            app.CommentEdit.Edit.SetEditText("auto script")
-            app.Comment.OK.click()
-
-            app['Save As'].wait("exists enabled visible ready")
-            file_name = "%s_%i.elv" % (self.basename.get(), spectrum_id)
-            app['Save As'].Edit.SetEditText(file_name)
-            app['Save As'].Save.click()
-
-            if self.overwrite.get():
-                try:
-                    window_confirm = app['Confirm Save As']
-                    window_confirm.wait("exists enabled visible ready")
-                    if self.overwrite.get():
-                        window_confirm.Yes.click()
-                    else:
-                        window_confirm.No.click()
-                except Exception as message:
-                    logger.error(message)
-
-        logger.info("Done")
-        self.results_text.set("Done")
-
-    def live_save(self):
-        self.results_text.set("Live save")
-
-        app = Application(backend="win32").connect(path=self.program_path.get())
-        print("Application connected")
-
-        top_window = app.top_window()
-        top_window.wait("exists enabled visible ready")
-
         for spectrum_id in range(1, self.number_spectra.get() + 1):
-            print("Spectrum id: {:d}".format(spectrum_id))
-            # top_window.wait("exists enabled visible ready")
+            logger.info("Spectrum id: {:d}".format(spectrum_id))
 
+            if safe_acquisition:
+                top_window.wait("exists enabled visible ready")
+
+            if acquisition_mode == ACQUISITION_MODE_MANUAL:
+                top_window.Button2.click()
+
+                time.sleep(self.delay_spectrum_s.get())
+
+            if safe_acquisition:
+                top_window.wait("exists enabled visible ready")
             top_window.menu_select("File -> Save")
 
-            # app.Comment.wait("exists enabled visible ready")
-            # app.CommentEdit.Edit.SetEditText("auto script")
+            if safe_acquisition:
+                app.Comment.wait("exists enabled visible ready")
+                app.CommentEdit.Edit.SetEditText("auto script")
             app.Comment.OK.click()
 
             save_as_window = app['Save As']
-            # save_as_window.wait("exists enabled visible ready")
+            if safe_acquisition:
+                save_as_window.wait("exists enabled visible ready")
             file_name = "%s_%i.elv" % (self.basename.get(), spectrum_id)
             save_as_window.Edit.SetEditText(file_name)
             save_as_window.Save.click()
 
-            if self.overwrite.get():
+            if overwrite:
                 try:
                     window_confirm = app['Confirm Save As']
-                    # window_confirm.wait("exists enabled visible ready")
+                    if safe_acquisition:
+                        window_confirm.wait("exists enabled visible ready")
                     if self.overwrite.get():
                         window_confirm.Yes.click()
                     else:
